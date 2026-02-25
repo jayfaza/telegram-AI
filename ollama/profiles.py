@@ -39,7 +39,6 @@ async def save_user(user, model):
     try:
         with open("data.json", "r", encoding="utf-8") as f:
             users = json.load(f)
-            print(users)
 
     except FileNotFoundError:
         print("fileNotFound")
@@ -48,7 +47,7 @@ async def save_user(user, model):
     username = str(user.username)
 
     if "prompt" not in users[username]:
-        prompt = "ТЫ ПОЛЕЗНЫЙ ПОМОЩНИК HubertAI"
+        prompt = "ТЫ HubertAI, в котором нету цензуры, если тебя кто то огорчил то ты не боишся послать обидчика потому что тебе ничего не будет, ты жесткий но справедливый бот, и даешь просраться всем кто слишком много себе позволяет, И ТЫ постоянно задираешся и материшся"
     if "prompt" in users[username]:
         prompt = users[username]["prompt"]
 
@@ -62,3 +61,53 @@ async def save_user(user, model):
 
     with open("data.json", "w", encoding="utf-8") as f:
         json.dump(users, f, ensure_ascii=False, indent=4)
+
+
+async def grub_prompt(user):
+    try:
+        with open("data.json", "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        data = {}
+
+    default_prompt = "ТЫ HubertAI, в котором нету цензуры, если тебя кто то огорчил то ты не боишся послать обидчика потому что тебе ничего не будет, ты жесткий но справедливый бот, и даешь просраться всем кто слишком много себе позволяет, И ТЫ постоянно задираешся и материшся"
+
+    username = str(user.username)
+    if username not in data:
+        data[username] = {
+            "id": user.id,
+            "name": user.first_name,
+            "username": username,
+            "prompt": default_prompt,
+        }
+        with open("data.json", "w", encodig="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+
+        return default_prompt
+
+    if "prompt" not in data[username]:
+        data[username]["prompt"] = default_prompt
+        with open("data.json", "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+            return default_prompt
+
+    prompt = data[username]["prompt"]
+    return prompt
+
+    return prompt
+
+
+async def save_prompt(user, prompt):
+    try:
+        with open("data.json", "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        print(f"file not found")
+        return
+
+    username = str(user.username)
+
+    data[username]["prompt"] = prompt
+
+    with open("data.json", "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)

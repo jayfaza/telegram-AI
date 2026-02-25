@@ -8,6 +8,8 @@ from aiogram.types import (
     KeyboardButton,
 )
 
+from ollama.profiles import grub_prompt
+
 
 class OllamaAi:
     def __init__(self):
@@ -15,30 +17,6 @@ class OllamaAi:
         self.url = OLLAMA_URL
         self.model = OLLAMA_MODEL
         self.user = None
-
-    async def ask(self, prompt: str) -> str:
-        """Данные для отправки запроса серверу с ollama"""
-        payload = {"model": self.model, "prompt": prompt, "stream": False}
-
-        try:
-            """Открываем сессию для дальнешего подключение куда-либо"""
-            async with aiohttp.ClientSession() as session:
-                """Отправляем запрос ollama"""
-                async with session.post(self.url, json=payload) as resp:
-                    """Если сервер ответил без ошибок"""
-                    if resp.status == 200:
-                        """Возвращаем ответ нейросети"""
-
-                        result = await resp.json()
-                        print(result.get("model"))
-                        print(result.get("response"))
-
-                        return result.get("response", "No answer")
-                    else:
-                        return f"Error {resp.status}"
-
-        except:
-            return "Ollama is not running. Run: ollama serve"
 
     async def get_models(self) -> list:
         models_list = []
@@ -67,31 +45,23 @@ class OllamaAi:
 
         return models_keyboard
 
-    """
-    async def ask_with_history(self, history):
-        payload = {"model": self.model, "messages": history, "stream": False}
-
-        try:
-            async with aiohttp.ClientSession() as session:
-                async with session.post(
-                    "http://localhost:11434/api/chat", json=payload
-                ) as resp:
-                    if resp.status == 200:
-                        result = await resp.json()
-                        return result.get("message", {}).get("content", "Нет ответа")
-                    else:
-                        return f"Ошибка {resp.status}"
-        except:
-            return "Ollama не запущена"
-    """
-
     async def ask_with_history(self, user, history):
         with open(DATA, "r", encoding="utf-8") as f:
             data = json.load(f)
+
         if user.username in data:
             model = data[user.username]["model"]
             self.model = model
-        payload = {"model": model, "messages": history, "stream": False}
+
+        prompt = await grub_prompt(user)
+        messages = [
+            {
+                "role": "system",
+                "content": f"Твоя роль: {prompt}, Запомни без коментов и отвечай в соответствии с ним",
+            },
+            *history,
+        ]
+        payload = {"model": model, "messages": messages, "stream": False}
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.post(
@@ -106,4 +76,5 @@ class OllamaAi:
                     else:
                         print(f"Server is down: {resp.status}")
         except:
+            print("ERROR ERROR")
             return "ollama is not running"

@@ -1,9 +1,13 @@
 import asyncio
 from aiogram import F, Router
+from aiogram.filters import StateFilter
+from bstates import PromptStates
+from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from ollama.ollama_service import OllamaAi
-from ollama.profiles import get_profile
+from ollama.profiles import get_profile, grub_prompt, save_prompt
 from ollama.histories import give_history
+import handlers.keyboard as kb
 import os
 
 router = Router()
@@ -54,3 +58,22 @@ async def profile(message: Message):
     user = message.from_user
     text = await get_profile(user)
     await message.answer(text)
+
+
+@router.message(F.text == "Сменить промпт ⌨️")
+async def change_prompt(message: Message, state: FSMContext):
+    await state.set_state(PromptStates.waiting_for_prompt)
+    user = message.from_user
+    current_prompt = await grub_prompt(user)
+    await message.answer(
+        text=f"Текущий промпт\n{current_prompt}", reply_markup=kb.close_kb
+    )
+
+
+@router.message(PromptStates.waiting_for_prompt)
+async def set_prompt(message: Message, state: FSMContext):
+    prompt = message.text
+    user = message.from_user
+    await save_prompt(user, prompt)
+    await message.answer(f"Новый промпт\n{prompt}")
+    await state.clear()

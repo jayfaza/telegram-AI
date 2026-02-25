@@ -16,7 +16,13 @@ reply_kb = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="Профиль 🪪")],
         [KeyboardButton(text="Очистить историю 📝"), KeyboardButton(text="История 📝")],
-        [KeyboardButton(text="Модель 📖")],
+        [KeyboardButton(text="Модель 📖"), KeyboardButton(text="Сменить промпт ⌨️")],
     ],
     resize_keyboard=True,
+)
+
+close_kb = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [InlineKeyboardButton(text="Закрыть ❌", callback_data="remove_msg")]
+    ]
 )

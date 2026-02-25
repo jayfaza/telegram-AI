@@ -2,6 +2,9 @@ import asyncio
 from aiogram import F, Router, types
 from ollama.ollama_service import OllamaAi
 from ollama.add_model import save_model
+from aiogram.filters import StateFilter
+from bstates import PromptStates
+from aiogram.fsm.context import FSMContext
 import os
 
 router = Router()
@@ -21,5 +24,6 @@ async def set_model(callback: types.CallbackQuery):
 
 
 @router.callback_query(F.data == "remove_msg")
-async def remove_models_msg(callback: types.CallbackQuery):
+async def remove_models_msg(callback: types.CallbackQuery, state: FSMContext):
     await callback.message.delete()
+    await state.clear()
