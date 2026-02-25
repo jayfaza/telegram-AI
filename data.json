@@ -3,7 +3,8 @@
     "id": 5727422326,
     "name": "артём",
     "username": "j010250060010260a",
-    "model": "qwen3-vl:8b"
+    "model": "llama3.1:8b",
+    "prompt": "ТЫ ПОЛЕЗНЫЙ ПОМОЩНИК HubertAI"
   },
   "k0ger0": {
     "id": 6434890894,
