@@ -1,0 +1,21 @@
+{
+  "j010250060010260a": {
+    "id": 5727422326,
+    "name": "артём",
+    "username": "j010250060010260a",
+    "model": "qwen3-vl:8b"
+  },
+  "k0ger0": {
+    "id": 6434890894,
+    "name": "k0ger0",
+    "username": "k0ger0",
+    "model": "llama3.1:8b"
+  },
+  "Stalk1r": {
+    "id": 5909445311,
+    "name": "Stalk1r",
+    "username": "Stalk1r",
+    "model": "llama3.1:8b"
+  }
+}
+

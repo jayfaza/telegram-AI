@@ -1,0 +1,8 @@
+.env
+history/
+
+.lib/
+__pycache__/
+*.pyc
+
+
