@@ -1,12 +1,18 @@
 import aiohttp
 import json
-from config import OLLAMA_URL, OLLAMA_MODEL, DATA
+from config import OLLAMA_URL, OLLAMA_MODEL, DATA, MODELS_LIST
 from aiogram.types import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     ReplyKeyboardMarkup,
     KeyboardButton,
 )
+from mistralai import Mistral
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+MISTRAL = os.getenv("MISTRAL")
 
 from ollama.profiles import grub_prompt
 
@@ -17,20 +23,10 @@ class OllamaAi:
         self.url = OLLAMA_URL
         self.model = OLLAMA_MODEL
         self.user = None
+        self.mistral = Mistral(api_key=MISTRAL)
 
     async def get_models(self) -> list:
-        models_list = []
-        try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get("http://localhost:11434/api/tags") as resp:
-                    raw_models = await resp.json()
-                    models = raw_models["models"]
-                    for model in models:
-                        model = model["name"]
-                        models_list.append(model)
-            return models_list
-        except:
-            print("No response")
+        return MODELS_LIST
 
     async def build_keyboard(self):
         models = await self.get_models()
@@ -45,36 +41,48 @@ class OllamaAi:
 
         return models_keyboard
 
-    async def ask_with_history(self, user, history):
-        with open(DATA, "r", encoding="utf-8") as f:
-            data = json.load(f)
+    async def ask_mistral(self, user, model, history):
+        username = str(user.username)
+        try:
+            with open("data.json", "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except:
+            data = {}
 
-        if user.username in data:
-            model = data[user.username]["model"]
-            self.model = model
-
-        prompt = await grub_prompt(user)
-        messages = [
+        if username in data:
+            prompt = (
+                data[username]["prompt"]
+                if "prompt" in data[username]
+                else "Ты вежливый и приятный"
+            )
+        history = [
             {
                 "role": "system",
                 "content": f"Твоя роль: {prompt}, Запомни без коментов и отвечай в соответствии с ним",
             },
             *history,
         ]
-        payload = {"model": model, "messages": messages, "stream": False}
+        resp = self.mistral.chat.complete(model=model, messages=history)
+        response = resp.choices[0].message.content
+        print(f"{model}: {response}")
+        return response
+
+    async def get_model(self, user):
+        username = str(user.username)
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.post(
-                    "http://localhost:11434/api/chat", json=payload
-                ) as resp:
-                    if resp.status == 200:
-                        result = await resp.json()
-                        print(
-                            f"{self.model}: {result.get("message", "none").get("content", "none")}"
-                        )
-                        return result.get("message", "none").get("content", "none")
-                    else:
-                        print(f"Server is down: {resp.status}")
+            with open("data.json", "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if username in data:
+                    model = (
+                        data[username]["model"]
+                        if data[username]["model"]
+                        else "mistral-tiny"
+                    )
+                    return model
+                model = "mistral-tiny"
+                return model
+
         except:
-            print("ERROR ERROR")
-            return "ollama is not running"
+            data = {}
+            model = "mistral-tiny"
+            return model

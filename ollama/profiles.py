@@ -27,10 +27,10 @@ Current model: {model}
 ID: {user.id}
 Name: {user.first_name}
 Username: @{user.username if user.username else 'нет'}
-Current model: llama3.1:8b 
+Current model: mistral-tiny 
 """
 
-    model = "llama3.1:8b"
+    model = "mistral-tiny"
     await save_user(user, model)
     return text
 

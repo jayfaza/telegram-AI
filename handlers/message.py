@@ -21,6 +21,7 @@ async def handle_message(message: Message):
     print(f"User: {message.text}")
     await add_to_history(user, "user", message.text)
     history = await give_history(user)
-    response = await ollama.ask_with_history(user, history)
+    model = await ollama.get_model(user)
+    response = await ollama.ask_mistral(user, model, history)
     await add_to_history(user, "assistant", response)
     await message.answer(response)
